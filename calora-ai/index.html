@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#087f5b">
+  <meta name="description" content="Calora AI helps you estimate meal calories, track nutrition, and work toward your daily goals.">
+  <title>Calora AI — Snap. Track. Transform.</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script defer src="/app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="Calora AI home">
+        <span class="brand-mark">C<span>+</span></span>
+        <span><strong>Calora</strong><small>AI NUTRITION</small></span>
+      </a>
+      <div class="side-label">WORKSPACE</div>
+      <nav class="side-nav">
+        <button class="nav-item active" data-view="dashboard"><span>▦</span> Dashboard</button>
+        <button class="nav-item" data-view="diary"><span>☷</span> Food diary</button>
+        <button class="nav-item" data-view="progress"><span>↗</span> Progress</button>
+        <button class="nav-item" data-view="profile"><span>◎</span> My goals</button>
+      </nav>
+      <div class="sidebar-tip">
+        <span class="tip-icon">✦</span>
+        <strong>Small steps add up.</strong>
+        <p>Build a routine that works for you, one meal at a time.</p>
+      </div>
+      <div class="sidebar-bottom"><span class="status-dot"></span><span id="sync-status">Guest mode · saved on this device</span></div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="mobile-brand" data-view="dashboard"><span class="brand-mark">C<span>+</span></span><strong>Calora AI</strong></button>
+        <div class="date-label" id="today-label">TODAY</div>
+        <div class="top-actions">
+          <button class="icon-btn" id="settings-shortcut" aria-label="My goals">⚙</button>
+          <button class="profile-chip" id="account-button"><span class="avatar">U</span><span id="account-label">Guest user</span><span>⌄</span></button>
+        </div>
+      </header>
+
+      <section class="view active" id="view-dashboard">
+        <div class="welcome-row">
+          <div><p class="eyebrow">YOUR DAILY CHECK-IN</p><h1>Eat well. <span>Feel better.</span></h1><p class="subheading">Your progress, one bite at a time.</p></div>
+          <div class="date-pill" id="date-pill">Today</div>
+        </div>
+
+        <div class="hero-grid">
+          <article class="card calorie-card">
+            <div class="card-head"><div><p class="eyebrow">CALORIE INTAKE</p><h2>Today's overview</h2></div><span class="pill green-pill">Daily goal</span></div>
+            <div class="calorie-overview">
+              <div class="ring-wrap">
+                <svg class="progress-ring" viewBox="0 0 180 180" role="img" aria-label="Daily calorie progress">
+                  <circle class="ring-track" cx="90" cy="90" r="75"></circle>
+                  <circle class="ring-progress" id="calorie-ring" cx="90" cy="90" r="75"></circle>
+                </svg>
+                <div class="ring-center"><strong id="consumed-calories">0</strong><span>kcal eaten</span></div>
+              </div>
+              <div class="calorie-stats">
+                <div><span class="stat-dot eaten-dot"></span><span>Consumed</span><strong id="consumed-label">0 kcal</strong></div>
+                <div><span class="stat-dot goal-dot"></span><span>Daily goal</span><strong id="goal-label">1,800 kcal</strong></div>
+                <div><span class="stat-dot remain-dot"></span><span>Remaining</span><strong id="remaining-label">1,800 kcal</strong></div>
+                <div class="progress-line"><span id="goal-progress-line"></span></div>
+                <small id="goal-progress-text">0% of your daily goal</small>
+              </div>
+            </div>
+            <div class="goal-note" id="goal-note">You’ve got this. Log your first meal to get started.</div>
+          </article>
+
+          <article class="card scan-card">
+            <div class="scan-art"><div class="scan-circle">✦</div><div class="scan-food">🥗</div><div class="scan-spark spark-one">✧</div><div class="scan-spark spark-two">✦</div></div>
+            <p class="eyebrow">SMART FOOD SCANNER</p><h2>What's on your plate?</h2>
+            <p class="muted">Snap or upload a meal photo to get an AI-powered calorie estimate.</p>
+            <button class="btn btn-primary full-btn" id="open-scanner"><span>▧</span> Scan your food</button>
+            <button class="text-btn" id="manual-add">+ Add food manually</button>
+          </article>
+        </div>
+
+        <div class="section-heading"><div><p class="eyebrow">YOUR NUTRITION</p><h2>Today's nutrition</h2></div><button class="text-btn" data-view="diary">View food diary →</button></div>
+        <div class="macro-grid">
+          <article class="card macro-card"><div class="macro-icon protein-icon">P</div><div><span>Protein</span><strong id="protein-total">0 g</strong><small id="protein-sub">Daily total</small></div><div class="mini-bar"><span id="protein-bar"></span></div></article>
+          <article class="card macro-card"><div class="macro-icon carbs-icon">C</div><div><span>Carbs</span><strong id="carbs-total">0 g</strong><small id="carbs-sub">Daily total</small></div><div class="mini-bar"><span id="carbs-bar"></span></div></article>
+          <article class="card macro-card"><div class="macro-icon fats-icon">F</div><div><span>Fat</span><strong id="fat-total">0 g</strong><small id="fat-sub">Daily total</small></div><div class="mini-bar"><span id="fat-bar"></span></div></article>
+        </div>
+
+        <div class="section-heading meals-heading"><div><p class="eyebrow">WHAT YOU'VE EATEN</p><h2>Today's meals <span class="count-badge" id="meal-count">0</span></h2></div><button class="btn btn-outline" id="add-meal-button">＋ Add meal</button></div>
+        <div class="meal-list card" id="recent-meals"><div class="empty-state"><div class="empty-emoji">🍽️</div><strong>Your food diary is waiting</strong><p>Scan a meal or add food manually to start tracking.</p><button class="btn btn-soft" id="empty-add">Add your first meal</button></div></div>
+        <p class="disclaimer">Calorie and nutrition values are estimates, not medical advice. Actual values vary with portion size, ingredients and preparation.</p>
+      </section>
+
+      <section class="view" id="view-diary">
+        <div class="page-title"><p class="eyebrow">YOUR FOOD JOURNAL</p><h1>Food diary</h1><p class="subheading">Every meal, all in one place.</p></div>
+        <div class="card diary-toolbar"><label for="diary-date">Choose a date</label><input type="date" id="diary-date"><div class="diary-summary"><strong id="diary-calories">0 kcal</strong><span>total for selected day</span></div><button class="btn btn-primary" id="diary-add">＋ Add food</button></div>
+        <div class="meal-list card" id="diary-meals"></div>
+      </section>
+
+      <section class="view" id="view-progress">
+        <div class="page-title"><p class="eyebrow">YOUR JOURNEY</p><h1>Progress</h1><p class="subheading">Consistency matters more than perfection.</p></div>
+        <div class="stats-grid"><article class="card big-stat"><span>Days tracked</span><strong id="days-tracked">0</strong><small>Days with a food entry</small></article><article class="card big-stat"><span>Goal days</span><strong id="goal-days">0</strong><small>Days within your calorie goal</small></article><article class="card big-stat"><span>Average calories</span><strong id="average-calories">0</strong><small>Per tracked day</small></article></div>
+        <article class="card chart-card"><div class="card-head"><div><p class="eyebrow">LAST 7 DAYS</p><h2>Calorie history</h2></div><span class="pill">kcal / day</span></div><div class="bar-chart" id="weekly-chart"><div class="empty-chart">Log meals on a few days to see your trend.</div></div></article>
+        <article class="card weight-card"><div class="card-head"><div><p class="eyebrow">BODY GOALS</p><h2>Weight progress</h2></div><button class="text-btn" data-view="profile">Edit goals →</button></div><div class="weight-stats"><div><span>Current weight</span><strong id="progress-current-weight">—</strong></div><div><span>Target weight</span><strong id="progress-target-weight">—</strong></div><div><span>Change so far</span><strong id="progress-weight-change">—</strong></div></div><form id="weight-entry-form" class="inline-form"><label for="weight-entry">Log today's weight (kg)</label><input id="weight-entry" type="number" min="20" max="500" step="0.1" placeholder="e.g. 82.5" required><button class="btn btn-primary" type="submit">Save weight</button></form><div class="weight-history" id="weight-history"></div></article>
+      </section>
+
+      <section class="view" id="view-profile">
+        <div class="page-title"><p class="eyebrow">PERSONALISE CALORA</p><h1>Your goals</h1><p class="subheading">Set a target that fits your life.</p></div>
+        <form class="card settings-form" id="profile-form">
+          <div class="form-section"><h2>About you</h2><p>Used to personalise your nutrition targets.</p><div class="form-grid"><label>Display name<input id="profile-name" maxlength="50" placeholder="Your name"></label><label>Age<input id="profile-age" type="number" min="18" max="100" placeholder="Age"></label><label>Height (cm)<input id="profile-height" type="number" min="100" max="250" placeholder="e.g. 173"></label><label>Current weight (kg)<input id="profile-weight" type="number" min="20" max="500" step="0.1" placeholder="e.g. 85"></label><label>Target weight (kg)<input id="profile-target" type="number" min="20" max="500" step="0.1" placeholder="e.g. 75"></label><label>Activity level<select id="profile-activity"><option value="1.2">Mostly sitting / little exercise</option><option value="1.375">Light activity (1–3 days/week)</option><option value="1.55">Moderate activity (3–5 days/week)</option><option value="1.725">Very active (6–7 days/week)</option></select></label></div></div>
+          <div class="form-section"><h2>Daily targets</h2><p>Estimates only. You can set a target with guidance from a qualified professional.</p><div class="form-grid"><label>Daily calorie goal (kcal)<input id="profile-calories" type="number" min="1000" max="5000" step="50" required></label><label>Protein goal (g)<input id="profile-protein" type="number" min="0" max="400"></label><label>Carbs goal (g)<input id="profile-carbs" type="number" min="0" max="700"></label><label>Fat goal (g)<input id="profile-fat" type="number" min="0" max="250"></label></div><button class="btn btn-soft" type="button" id="suggest-goal">Suggest a starting calorie target</button><p class="helper-text" id="goal-suggestion"></p></div>
+          <div class="form-actions"><button class="btn btn-primary" type="submit">Save my goals</button><span class="helper-text" id="profile-save-status"></span></div>
+        </form>
+        <article class="card account-card"><div><p class="eyebrow">YOUR ACCOUNT</p><h2>Keep your progress with you</h2><p class="muted">Guest mode saves data in this browser. Create an account to sync your diary between devices.</p></div><div class="account-actions"><button class="btn btn-outline" id="login-open">Log in</button><button class="btn btn-primary" id="signup-open">Create account</button><button class="text-btn hidden" id="logout-button">Log out</button></div></article>
+        <article class="card data-card"><div><h2>Your data</h2><p class="muted">Export a backup or clear local data from this device.</p></div><div class="account-actions"><button class="btn btn-outline" id="export-data">Export data</button><button class="btn btn-danger" id="clear-data">Clear local data</button></div></article>
+      </section>
+    </main>
+  </div>
+
+  <nav class="mobile-nav" aria-label="Main navigation"><button class="active" data-view="dashboard"><span>▦</span>Home</button><button data-view="diary"><span>☷</span>Diary</button><button data-view="progress"><span>↗</span>Progress</button><button data-view="profile"><span>◎</span>Goals</button></nav>
+
+  <div class="modal-backdrop hidden" id="food-modal" role="dialog" aria-modal="true" aria-labelledby="food-modal-title">
+    <div class="modal modal-wide"><button class="modal-close" data-close="food-modal" aria-label="Close">×</button><p class="eyebrow">SMART FOOD SCANNER</p><h2 id="food-modal-title">Add a meal</h2><p class="muted">Upload a photo for an AI estimate, or enter the details yourself.</p>
+      <div class="scanner-upload" id="drop-zone"><input type="file" id="food-image" accept="image/*" capture="environment" hidden><div id="image-preview-wrap" class="image-preview-wrap hidden"><img id="image-preview" alt="Selected food"></div><div id="upload-prompt"><div class="upload-icon">↑</div><strong>Upload a food photo</strong><span>Take a photo or choose from your gallery</span></div><button class="btn btn-outline" type="button" id="choose-photo">Choose photo</button></div>
+      <div class="scanner-actions"><button class="btn btn-soft" id="analyze-photo" disabled>✦ Estimate with AI</button><span id="ai-status" class="helper-text">AI estimates can be inaccurate. Review before saving.</span></div>
+      <form id="food-form" class="food-form"><div class="form-grid"><label>Food name<input id="food-name" required maxlength="100" placeholder="e.g. Roti, dal and paneer"></label><label>Meal type<select id="food-meal"><option>Breakfast</option><option>Lunch</option><option>Snacks</option><option>Dinner</option><option>Other</option></select></label><label>Calories (kcal)<input id="food-calories" type="number" min="0" max="10000" required placeholder="e.g. 450"></label><label>Protein (g)<input id="food-protein" type="number" min="0" max="500" step="0.1" value="0"></label><label>Carbs (g)<input id="food-carbs" type="number" min="0" max="1000" step="0.1" value="0"></label><label>Fat (g)<input id="food-fat" type="number" min="0" max="500" step="0.1" value="0"></label><label class="full-span">Portion / notes<input id="food-portion" maxlength="180" placeholder="e.g. 2 medium rotis, 1 bowl dal"></label></div><div class="form-actions"><button class="btn btn-primary" type="submit">Add to food diary</button><button class="btn btn-outline" type="button" data-close="food-modal">Cancel</button></div></form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title"><div class="modal auth-modal"><button class="modal-close" data-close="auth-modal" aria-label="Close">×</button><div class="auth-logo brand-mark">C<span>+</span></div><p class="eyebrow">YOUR PROGRESS, ANYWHERE</p><h2 id="auth-title">Welcome to Calora</h2><p class="muted" id="auth-description">Log in to sync your food diary securely.</p><form id="auth-form"><label>Email address<input id="auth-email" type="email" required autocomplete="email" placeholder="you@example.com"></label><label>Password<input id="auth-password" type="password" required minlength="6" autocomplete="current-password" placeholder="At least 6 characters"></label><button class="btn btn-primary full-btn" id="auth-submit" type="submit">Log in</button><p class="auth-error" id="auth-error" role="alert"></p></form><p class="auth-switch"><span id="auth-switch-label">New to Calora?</span> <button class="text-btn" id="auth-switch" type="button">Create an account</button></p><p class="helper-text">Your account sync requires Firebase setup by the site owner.</p></div></div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

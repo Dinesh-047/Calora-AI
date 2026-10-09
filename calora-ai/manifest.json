@@ -1,0 +1,12 @@
+{
+  "name": "Calora AI — Smart Nutrition",
+  "short_name": "Calora AI",
+  "description": "Snap. Track. Transform.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7faf8",
+  "theme_color": "#087f5b",
+  "icons": [
+    {"src": "/assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
+  ]
+}
