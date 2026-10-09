@@ -6,49 +6,9 @@
   <title>Calora AI — Snap. Track. Transform.</title>
   <meta name="theme-color" content="#10b981" />
 
-  <!-- Tailwind CSS & Icons -->
+  <!-- Tailwind CSS & FontAwesome -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <!-- Firebase Modular SDKs -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
-
-    // Optional Firebase Config (Login activate karne ke liye credentials daalein, warna guest mode hamesha chalega)
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "SENDER_ID",
-      appId: "APP_ID"
-    };
-
-    let auth = null, db = null;
-    try {
-      if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
-        const app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getFirestore(app);
-        window.firebaseAuth = auth;
-        window.firebaseDb = db;
-        
-        onAuthStateChanged(auth, async (user) => {
-          if (user) {
-            window.currentUser = user;
-            document.getElementById('userSyncBadge').innerHTML = `<i class="fa-solid fa-cloud text-emerald-500"></i> ${user.email.split('@')[0]}`;
-            await window.loadCloudUserData(user.uid);
-          } else {
-            window.currentUser = null;
-            document.getElementById('userSyncBadge').innerHTML = `<i class="fa-solid fa-user-clock text-amber-500"></i> Guest Mode`;
-          }
-        });
-      }
-    } catch(e) { console.log("Guest mode active (Firebase unconfigured)"); }
-  </script>
 
   <script>
     tailwind.config = {
@@ -67,12 +27,8 @@
       }
     }
   </script>
-  <style>
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-  </style>
 </head>
-<body class="bg-slate-100 text-slate-800 h-full flex flex-col md:flex-row font-sans select-none antialiased">
+<body class="bg-slate-100 text-slate-800 h-full flex flex-col md:flex-row font-sans antialiased">
 
   <!-- Desktop Sidebar -->
   <aside class="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 p-5 justify-between">
@@ -88,38 +44,17 @@
       </div>
 
       <nav class="space-y-1.5 text-sm font-semibold">
-        <button onclick="switchTab('dashboard')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-brand-50 text-brand-700 transition" data-tab="dashboard">
-          <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
-        </button>
-        <button onclick="switchTab('scanner')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition" data-tab="scanner">
+        <button onclick="switchTab('scanner')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-brand-50 text-brand-700 transition" data-tab="scanner">
           <i class="fa-solid fa-camera w-5"></i> AI Scanner
         </button>
-        <button onclick="switchTab('diary')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition" data-tab="diary">
-          <i class="fa-solid fa-book-open w-5"></i> Food Diary
-        </button>
-        <button onclick="switchTab('analytics')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition" data-tab="analytics">
-          <i class="fa-solid fa-chart-line w-5"></i> Analytics
-        </button>
-        <button onclick="switchTab('weight')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition" data-tab="weight">
-          <i class="fa-solid fa-weight-scale w-5"></i> Weight Log
-        </button>
-        <button onclick="switchTab('profile')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition" data-tab="profile">
-          <i class="fa-solid fa-user-gear w-5"></i> Calorie Goals
-        </button>
-        <button onclick="switchTab('settings')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition" data-tab="settings">
-          <i class="fa-solid fa-sliders w-5"></i> Settings
+        <button onclick="switchTab('dashboard')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50 transition" data-tab="dashboard">
+          <i class="fa-solid fa-chart-pie w-5"></i> Dashboard
         </button>
       </nav>
     </div>
 
-    <!-- Account / Sync Status -->
-    <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200">
-      <div id="userSyncBadge" class="text-xs font-bold text-slate-600 flex items-center gap-2 mb-2">
-        <i class="fa-solid fa-user-clock text-amber-500"></i> Guest Mode
-      </div>
-      <button onclick="openAuthModal()" class="w-full text-xs bg-slate-900 hover:bg-slate-800 text-white font-medium py-2 rounded-xl transition">
-        Sync Account / Login
-      </button>
+    <div class="p-3 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs">
+      <span class="text-emerald-700 font-bold"><i class="fa-solid fa-circle-check"></i> Real Gemini AI Connected</span>
     </div>
   </aside>
 
@@ -131,208 +66,54 @@
       </div>
       <h1 class="font-black text-lg text-slate-900 tracking-tight">Calora<span class="text-brand-500">AI</span></h1>
     </div>
-    <div class="flex items-center gap-2">
-      <span id="mobileSyncBadge" class="text-[11px] bg-slate-100 px-2.5 py-1 rounded-full font-bold text-slate-600">Guest</span>
-      <button onclick="openAuthModal()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
-        <i class="fa-solid fa-user text-xs"></i>
-      </button>
-    </div>
+    <span class="text-[11px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full">
+      <i class="fa-solid fa-bolt mr-1"></i> AI Active
+    </span>
   </div>
 
-  <!-- Main Content Area -->
-  <main class="flex-1 overflow-y-auto pb-24 md:pb-6 p-4 md:p-8 max-w-5xl mx-auto w-full">
+  <!-- Main Content -->
+  <main class="flex-1 overflow-y-auto pb-24 md:pb-6 p-4 md:p-8 max-w-2xl mx-auto w-full">
 
-    <!-- VIEW 1: DASHBOARD -->
-    <section id="view-dashboard" class="space-y-6">
-      <!-- Target Highlight Card -->
-      <div class="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-3xl p-6 text-white shadow-xl shadow-brand-500/10">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="text-xs font-bold uppercase tracking-wider text-emerald-100">Daily Calorie Target</p>
-            <h2 class="text-4xl font-extrabold mt-1"><span id="dashConsumed">0</span> <span class="text-lg font-medium text-emerald-200">/ <span id="dashTarget">2000</span> kcal</span></h2>
+    <!-- VIEW: SCANNER -->
+    <section id="view-scanner" class="space-y-5">
+      <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm text-center space-y-4">
+        <div>
+          <h2 class="text-2xl font-black text-slate-900">Food Scanner 📸</h2>
+          <p class="text-xs text-slate-500 mt-1">Photo upload ya click kijiye. Real AI image ko scan karke items batayega.</p>
+        </div>
+
+        <div id="dropBox" class="border-2 border-dashed border-brand-300 hover:border-brand-500 rounded-2xl p-6 bg-brand-50/20 cursor-pointer transition">
+          <input type="file" id="cameraInput" accept="image/*" class="hidden" onchange="runRealAIScan(event)" />
+          <div id="scanPrompt" class="space-y-3">
+            <div class="w-16 h-16 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center text-2xl mx-auto shadow-inner">
+              <i class="fa-solid fa-camera"></i>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-slate-700">Photo Select / Capture Karein</p>
+              <p class="text-xs text-slate-400">Thali, Sabzi ya Dal ki photo dalein</p>
+            </div>
           </div>
-          <span id="dashPercentBadge" class="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold">0% Completed</span>
-        </div>
-        
-        <div class="w-full bg-black/20 rounded-full h-3.5 mt-5 overflow-hidden p-0.5">
-          <div id="dashProgressBar" class="bg-white rounded-full h-2.5 transition-all duration-500" style="width: 0%"></div>
+          <img id="foodPreviewImg" class="hidden max-h-64 mx-auto rounded-xl shadow-md object-cover" />
         </div>
 
-        <div class="grid grid-cols-2 gap-4 mt-5 pt-5 border-t border-white/20 text-xs">
-          <div>
-            <p class="text-emerald-100 font-medium">Calories Left</p>
-            <p class="text-xl font-bold mt-0.5"><span id="dashRemaining">2000</span> kcal</p>
-          </div>
-          <div class="text-right">
-            <p class="text-emerald-100 font-medium">Burn Target</p>
-            <p class="text-xl font-bold mt-0.5">Active</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Macros Split -->
-      <div class="grid grid-cols-3 gap-3">
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm text-center">
-          <p class="text-[11px] font-bold text-slate-400 uppercase">Protein</p>
-          <p id="dashProtein" class="text-xl font-black text-sky-600 mt-1">0g</p>
-          <div class="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden">
-            <div id="barProtein" class="bg-sky-500 h-1.5 rounded-full" style="width: 0%"></div>
-          </div>
-        </div>
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm text-center">
-          <p class="text-[11px] font-bold text-slate-400 uppercase">Carbs</p>
-          <p id="dashCarbs" class="text-xl font-black text-amber-500 mt-1">0g</p>
-          <div class="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden">
-            <div id="barCarbs" class="bg-amber-500 h-1.5 rounded-full" style="width: 0%"></div>
-          </div>
-        </div>
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm text-center">
-          <p class="text-[11px] font-bold text-slate-400 uppercase">Fats</p>
-          <p id="dashFats" class="text-xl font-black text-rose-500 mt-1">0g</p>
-          <div class="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden">
-            <div id="barFats" class="bg-rose-500 h-1.5 rounded-full" style="width: 0%"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Today's Meals Section -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
-        <div class="flex justify-between items-center">
-          <h3 class="font-bold text-slate-900">Today's Meals</h3>
-          <button onclick="switchTab('scanner')" class="text-xs bg-brand-50 text-brand-700 font-bold px-3 py-1.5 rounded-xl hover:bg-brand-100 transition">
-            + Scan Meal
-          </button>
-        </div>
-        <div id="dashMealList" class="space-y-2">
-          <!-- Meal items dynamically injected here -->
-        </div>
-      </div>
-    </section>
-
-    <!-- VIEW 2: AI FOOD SCANNER -->
-  <!-- Settings ya Scanner View me ek chhota API Key Input box daalein -->
-<div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs mb-4">
-  <div class="flex justify-between items-center mb-1">
-    <span class="font-bold text-amber-800"><i class="fa-solid fa-key"></i> Gemini AI Vision Key:</span>
-    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 underline font-semibold">Get Free Key</a>
-  </div>
-  <input type="password" id="geminiApiKeyInput" placeholder="Yahan free Gemini API key paste karein (AIzaSy...)" class="w-full bg-white border border-amber-300 rounded-lg p-2 text-xs" onchange="localStorage.setItem('calora_gemini_key', this.value)" />
-  <p class="text-[10px] text-amber-700 mt-1">Google AI Studio se free key lekar yahan daalein. Key aapke phone/browser me hi safe rahegi.</p>
-</div>
-
-<script>
-  // Saved API key load karein
-  const savedKey = localStorage.getItem('calora_gemini_key');
-  if (savedKey && document.getElementById('geminiApiKeyInput')) {
-    document.getElementById('geminiApiKeyInput').value = savedKey;
-  }
-
-  // REAL AI Food Scanner Function
-  async function handleImageSelected(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const apiKey = localStorage.getItem('calora_gemini_key') || (document.getElementById('geminiApiKeyInput') ? document.getElementById('geminiApiKeyInput').value.trim() : '');
-    
-    if (!apiKey) {
-      alert("Pehle apni Free Gemini API Key daalein! (Google AI Studio se 1 second me mil jaati hai)");
-      document.getElementById('cameraInput').value = '';
-      return;
-    }
-
-    // Preview show karein
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      document.getElementById('scanPrompt').classList.add('hidden');
-      const img = document.getElementById('foodPreviewImg');
-      img.src = event.target.result;
-      img.classList.remove('hidden');
-
-      document.getElementById('scanningLoader').classList.remove('hidden');
-      document.getElementById('scanResultArea').classList.add('hidden');
-
-      // Base64 clean data nikalna
-      const base64Data = event.target.result.split(',')[1];
-      const mimeType = file.type || 'image/jpeg';
-
-      try {
-        // Real Gemini 1.5 Flash Vision Call
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                {
-                  text: `You are an expert Indian nutritionist and AI vision system. Analyze this food image precisely.
-Identify every visible food item with realistic quantity, estimated calories (kcal), and macros (protein, carbs, fat in grams).
-Return STRICT JSON format ONLY, without markdown fences or extra words:
-[
-  {"name": "Item Name", "qty": 1, "unit": "serving/bowl/pcs", "cal": 250, "p": 10, "c": 30, "f": 8}
-]`
-                },
-                {
-                  inline_data: {
-                    mime_type: mimeType,
-                    data: base64Data
-                  }
-                }
-              ]
-            }]
-          })
-        });
-
-        const data = await response.json();
-        
-        if (data.error) {
-          throw new Error(data.error.message);
-        }
-
-        let rawText = data.candidates[0].content.parts[0].text;
-        // Clean JSON formatting
-        rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-        const parsedItems = JSON.parse(rawText);
-
-        stagedDetectedItems = parsedItems;
-        renderEditableScannedItems();
-
-        document.getElementById('scanningLoader').classList.add('hidden');
-        document.getElementById('scanResultArea').classList.remove('hidden');
-
-      } catch (err) {
-        document.getElementById('scanningLoader').classList.add('hidden');
-        alert("AI Scan Error: " + err.message);
-        console.error(err);
-      }
-    };
-    reader.readAsDataURL(file);
-  }
-</script>
-
-        <!-- Scanning progress -->
+        <!-- Scanning Loader -->
         <div id="scanningLoader" class="hidden py-6 space-y-2">
           <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-brand-500 border-t-transparent"></div>
-          <p class="text-xs font-semibold text-slate-600">Analyzing ingredients and estimating portion sizes...</p>
+          <p class="text-xs font-semibold text-slate-600">Gemini AI photo analyse kar raha hai... Please wait.</p>
         </div>
 
-        <!-- Editable Breakdown Result -->
+        <!-- Real Breakdown Results -->
         <div id="scanResultArea" class="hidden text-left space-y-4 pt-4 border-t border-slate-200">
           <div class="flex justify-between items-center">
-            <div>
-              <h3 class="font-extrabold text-slate-900">Detected Meal Breakdown</h3>
-              <p class="text-xs text-emerald-600 font-semibold"><i class="fa-solid fa-circle-check"></i> 94% AI Confidence</p>
-            </div>
-            <span class="text-xs bg-slate-100 font-bold px-2 py-1 rounded-lg text-slate-600">Editable</span>
+            <h3 class="font-extrabold text-slate-900 text-sm">Detected Items (Actual Analysis)</h3>
+            <span class="text-[11px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">Real AI Scan</span>
           </div>
 
-          <!-- Items Table -->
-          <div id="scannedItemsList" class="space-y-2">
-            <!-- Dynamic editable meal rows -->
-          </div>
+          <div id="scannedItemsList" class="space-y-2"></div>
 
           <div class="bg-brand-50 p-4 rounded-xl border border-brand-100 flex justify-between items-center">
             <div>
-              <p class="text-xs text-brand-700 font-semibold">Total Estimated Calories</p>
+              <p class="text-xs text-brand-700 font-semibold">Total Calories</p>
               <p id="scannedTotalCal" class="text-2xl font-black text-brand-700">0 kcal</p>
             </div>
             <div class="text-right text-xs text-slate-500">
@@ -340,521 +121,215 @@ Return STRICT JSON format ONLY, without markdown fences or extra words:
             </div>
           </div>
 
-          <button onclick="commitScannedMeal()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-brand-500/20 transition flex items-center justify-center gap-2">
-            <i class="fa-solid fa-check"></i> Add to Today's Diary
+          <button onclick="commitScannedMeal()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 rounded-2xl shadow-lg shadow-brand-500/20 transition">
+            + Add to Daily Food Log
           </button>
         </div>
       </div>
     </section>
 
-    <!-- VIEW 3: FOOD DIARY -->
-    <section id="view-diary" class="hidden space-y-5">
-      <div class="flex justify-between items-center">
-        <div>
-          <h2 class="text-xl font-bold text-slate-900">Daily Food Diary</h2>
-          <p class="text-xs text-slate-400">Select date to view meal logs</p>
-        </div>
-        <input type="date" id="diaryDatePicker" class="bg-white border border-slate-200 text-xs font-bold rounded-xl px-3 py-2" onchange="loadDiaryForDate(this.value)" />
-      </div>
-
-      <div id="diaryListContainer" class="space-y-3">
-        <!-- Rendered diary entries -->
-      </div>
-    </section>
-
-    <!-- VIEW 4: ANALYTICS -->
-    <section id="view-analytics" class="hidden space-y-5">
-      <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4">
-        <h2 class="text-lg font-bold text-slate-900">Weekly Calorie Intake</h2>
-        <canvas id="weeklyChart" class="w-full max-h-64"></canvas>
-      </div>
-    </section>
-
-    <!-- VIEW 5: WEIGHT TRACKER -->
-    <section id="view-weight" class="hidden space-y-5">
-      <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-5">
-        <h2 class="text-xl font-bold text-slate-900">Weight Goal Tracker ⚖️</h2>
-        <div class="grid grid-cols-3 gap-3 text-center">
-          <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200">
-            <p class="text-[10px] uppercase font-bold text-slate-400">Starting</p>
-            <p id="weightStartDisplay" class="text-lg font-extrabold text-slate-800">75.0 kg</p>
-          </div>
-          <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200">
-            <p class="text-[10px] uppercase font-bold text-slate-400">Current</p>
-            <p id="weightCurrentDisplay" class="text-lg font-extrabold text-brand-600">72.5 kg</p>
-          </div>
-          <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200">
-            <p class="text-[10px] uppercase font-bold text-slate-400">Target</p>
-            <p id="weightTargetDisplay" class="text-lg font-extrabold text-slate-800">68.0 kg</p>
-          </div>
-        </div>
-
-        <div class="flex gap-2">
-          <input type="number" id="newWeightInput" step="0.1" placeholder="Enter current weight (kg)" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm" />
-          <button onclick="logNewWeight()" class="bg-slate-900 text-white font-bold px-5 rounded-xl text-sm">Save Log</button>
-        </div>
-
-        <h3 class="text-sm font-bold text-slate-800 mt-4">Weight History</h3>
-        <div id="weightLogHistory" class="space-y-2">
-          <!-- Weight log entries -->
+    <!-- VIEW: DASHBOARD -->
+    <section id="view-dashboard" class="hidden space-y-6">
+      <div class="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-3xl p-6 text-white shadow-xl shadow-brand-500/10">
+        <p class="text-xs font-bold uppercase tracking-wider text-emerald-100">Daily Calorie Target</p>
+        <h2 class="text-4xl font-extrabold mt-1"><span id="dashConsumed">0</span> <span class="text-lg font-medium text-emerald-200">/ 2000 kcal</span></h2>
+        
+        <div class="w-full bg-black/20 rounded-full h-3 mt-4 overflow-hidden">
+          <div id="dashProgressBar" class="bg-white rounded-full h-3 transition-all duration-500" style="width: 0%"></div>
         </div>
       </div>
-    </section>
 
-    <!-- VIEW 6: GOAL & PROFILE -->
-    <section id="view-profile" class="hidden space-y-5">
-      <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4">
-        <h2 class="text-xl font-bold text-slate-900">Calorie Goal Calculator (BMR/TDEE)</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold text-slate-600">
-          <div>
-            <label class="block mb-1">Age</label>
-            <input type="number" id="calcAge" value="28" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3" />
-          </div>
-          <div>
-            <label class="block mb-1">Height (cm)</label>
-            <input type="number" id="calcHeight" value="172" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3" />
-          </div>
-          <div>
-            <label class="block mb-1">Activity Level</label>
-            <select id="calcActivity" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3">
-              <option value="1.2">Sedentary (Desk job)</option>
-              <option value="1.375" selected>Lightly active (1-3 days exercise)</option>
-              <option value="1.55">Moderately active (3-5 days workout)</option>
-              <option value="1.725">Very active (Physical job)</option>
-            </select>
-          </div>
-          <div>
-            <label class="block mb-1">Fitness Goal</label>
-            <select id="calcGoal" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3">
-              <option value="-400" selected>Weight Loss (-400 kcal)</option>
-              <option value="0">Maintain Weight</option>
-              <option value="350">Muscle Gain (+350 kcal)</option>
-            </select>
-          </div>
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="font-bold text-slate-900">Today's Meals</h3>
+          <button onclick="switchTab('scanner')" class="text-xs bg-brand-50 text-brand-700 font-bold px-3 py-1.5 rounded-xl">+ Scan New</button>
         </div>
-        <button onclick="calculateAndSaveTarget()" class="w-full bg-brand-600 text-white font-bold py-3 rounded-xl transition">
-          Calculate & Update Daily Target
-        </button>
-      </div>
-    </section>
-
-    <!-- VIEW 7: SETTINGS & BACKUP -->
-    <section id="view-settings" class="hidden space-y-5">
-      <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4">
-        <h2 class="text-xl font-bold text-slate-900">App Settings & Data Storage</h2>
-        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-2">
-          <p class="font-bold text-slate-700">Storage Mode: Local + Cloud Ready</p>
-          <p class="text-slate-500">Aapka saara data browser me safely LocalStorage me save ho raha hai. Aap data export kar sakte hain ya reset kar sakte hain.</p>
-        </div>
-        <div class="flex gap-3">
-          <button onclick="exportDataJSON()" class="flex-1 border border-slate-300 font-bold py-2.5 rounded-xl text-xs">Export Backup</button>
-          <button onclick="resetAllData()" class="flex-1 bg-rose-50 text-rose-600 font-bold py-2.5 rounded-xl text-xs hover:bg-rose-100">Clear Data</button>
-        </div>
+        <div id="dashMealList" class="space-y-2"></div>
       </div>
     </section>
 
   </main>
 
-  <!-- Mobile Bottom Navigation Bar -->
-  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-2 flex justify-around items-center z-50">
-    <button onclick="switchTab('dashboard')" class="mobile-nav-btn flex flex-col items-center gap-1 text-brand-600 text-[11px] font-bold" data-tab="dashboard">
-      <i class="fa-solid fa-chart-pie text-lg"></i>
-      <span>Today</span>
-    </button>
-    <button onclick="switchTab('scanner')" class="mobile-nav-btn flex flex-col items-center gap-1 text-slate-400 text-[11px] font-medium" data-tab="scanner">
-      <div class="w-10 h-10 -mt-5 bg-brand-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+  <!-- Mobile Bottom Nav -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-6 py-2 flex justify-around items-center z-50">
+    <button onclick="switchTab('scanner')" class="flex flex-col items-center gap-1 text-brand-600 text-xs font-bold" id="m-scan">
+      <div class="w-11 h-11 -mt-6 bg-brand-500 rounded-full flex items-center justify-center text-white shadow-lg">
         <i class="fa-solid fa-camera text-base"></i>
       </div>
       <span>Scan</span>
     </button>
-    <button onclick="switchTab('diary')" class="mobile-nav-btn flex flex-col items-center gap-1 text-slate-400 text-[11px] font-medium" data-tab="diary">
-      <i class="fa-solid fa-book-open text-lg"></i>
-      <span>Diary</span>
-    </button>
-    <button onclick="switchTab('weight')" class="mobile-nav-btn flex flex-col items-center gap-1 text-slate-400 text-[11px] font-medium" data-tab="weight">
-      <i class="fa-solid fa-weight-scale text-lg"></i>
-      <span>Weight</span>
-    </button>
-    <button onclick="switchTab('profile')" class="mobile-nav-btn flex flex-col items-center gap-1 text-slate-400 text-[11px] font-medium" data-tab="profile">
-      <i class="fa-solid fa-user text-lg"></i>
-      <span>Goal</span>
+    <button onclick="switchTab('dashboard')" class="flex flex-col items-center gap-1 text-slate-400 text-xs font-bold" id="m-dash">
+      <i class="fa-solid fa-chart-pie text-lg"></i>
+      <span>Dashboard</span>
     </button>
   </nav>
 
-  <!-- Firebase Auth Modal -->
-  <div id="authModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
-      <div class="flex justify-between items-center">
-        <h3 class="font-bold text-lg text-slate-900">Cloud Sync Account</h3>
-        <button onclick="closeAuthModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <p class="text-xs text-slate-500">Firebase configure karne ke baad aap apne multiple devices ke beech meal records sync kar sakte hain.</p>
-      <input type="email" id="authEmail" placeholder="Email address" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs" />
-      <input type="password" id="authPassword" placeholder="Password" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs" />
-      <div class="flex gap-2 pt-2">
-        <button onclick="handleLogin()" class="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 rounded-xl text-xs">Login</button>
-        <button onclick="handleSignup()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2.5 rounded-xl text-xs">Sign Up</button>
-      </div>
-    </div>
-  </div>
-
   <script>
-    // Primary State Management (Option C: Local First + Cloud Mirror)
+    // Aapki exact Gemini API Key pehle se add hai
+    const GEMINI_API_KEY = "AQ.Ab8RN6JvoxJU4xJy_tznN68AGy7wU0xZVUJUr6m4AeXR2X947w";
+
     const todayKey = new Date().toISOString().split('T')[0];
-    
-    let appState = {
-      user: {
-        age: 28,
-        height: 172,
-        currentWeight: 72.5,
-        targetWeight: 68.0,
-        startWeight: 75.0,
-        dailyTarget: 1850,
-        macroTargets: { p: 120, c: 200, f: 55 }
-      },
-      meals: {}, // Keyed by YYYY-MM-DD
-      weightHistory: [
-        { date: '2026-10-01', weight: 73.4 },
-        { date: '2026-10-05', weight: 72.8 },
-        { date: '2026-10-09', weight: 72.5 }
-      ]
+    let stagedDetectedItems = [];
+    let state = {
+      meals: JSON.parse(localStorage.getItem('calora_meals') || '{}')
     };
 
-    // Staging area for current AI Scanner detection
-    let stagedDetectedItems = [];
+    if (!state.meals[todayKey]) state.meals[todayKey] = [];
 
-    function initApp() {
-      const saved = localStorage.getItem('calora_master_data');
-      if (saved) {
-        try { appState = JSON.parse(saved); } catch(e){}
-      }
-      if (!appState.meals[todayKey]) {
-        appState.meals[todayKey] = [];
-      }
-      document.getElementById('diaryDatePicker').value = todayKey;
-      renderDashboard();
-      renderWeightTab();
-      initAnalyticsChart();
-    }
-
-    function saveState() {
-      localStorage.setItem('calora_master_data', JSON.stringify(appState));
-      renderDashboard();
-      renderWeightTab();
-      // If Firebase authenticated, sync to Firestore
-      if (window.currentUser && window.firebaseDb) {
-        try {
-          const { doc, setDoc } = window.firebaseFirestoreMethods;
-          setDoc(doc(window.firebaseDb, "users", window.currentUser.uid), appState, { merge: true });
-        } catch(e){}
-      }
-    }
-
-    // Tab Switching
-    function switchTab(tabId) {
-      const views = ['dashboard', 'scanner', 'diary', 'analytics', 'weight', 'profile', 'settings'];
-      views.forEach(v => {
-        const el = document.getElementById(`view-${v}`);
-        if (el) el.classList.toggle('hidden', v !== tabId);
+    function switchTab(t) {
+      ['dashboard', 'scanner'].forEach(v => {
+        document.getElementById(`view-${v}`).classList.toggle('hidden', v !== t);
       });
-
-      // Update Desktop Nav styles
-      document.querySelectorAll('.nav-btn').forEach(btn => {
-        const match = btn.getAttribute('data-tab') === tabId;
-        btn.classList.toggle('bg-brand-50', match);
-        btn.classList.toggle('text-brand-700', match);
-        btn.classList.toggle('text-slate-600', !match);
-      });
-
-      // Update Mobile Nav styles
-      document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
-        const match = btn.getAttribute('data-tab') === tabId;
-        btn.classList.toggle('text-brand-600', match);
-        btn.classList.toggle('text-slate-400', !match);
-      });
-
-      if (tabId === 'diary') loadDiaryForDate(document.getElementById('diaryDatePicker').value);
-      if (tabId === 'analytics') updateAnalyticsChart();
+      document.getElementById('m-dash').classList.toggle('text-brand-600', t === 'dashboard');
+      document.getElementById('m-dash').classList.toggle('text-slate-400', t !== 'dashboard');
+      document.getElementById('m-scan').classList.toggle('text-brand-600', t === 'scanner');
+      if (t === 'dashboard') renderDashboard();
     }
 
-    // Dashboard Calculations
-    function renderDashboard() {
-      const todayMeals = appState.meals[todayKey] || [];
-      const totals = todayMeals.reduce((acc, m) => {
-        acc.cal += m.calories;
-        acc.p += m.p;
-        acc.c += m.c;
-        acc.f += m.f;
-        return acc;
-      }, { cal: 0, p: 0, c: 0, f: 0 });
+    document.getElementById('dropBox').addEventListener('click', () => {
+      document.getElementById('cameraInput').click();
+    });
 
-      document.getElementById('dashConsumed').innerText = totals.cal;
-      document.getElementById('dashTarget').innerText = appState.user.dailyTarget;
-      
-      const remaining = Math.max(0, appState.user.dailyTarget - totals.cal);
-      document.getElementById('dashRemaining').innerText = remaining;
-
-      const pct = Math.min(100, Math.round((totals.cal / appState.user.dailyTarget) * 100)) || 0;
-      document.getElementById('dashProgressBar').style.width = pct + '%';
-      document.getElementById('dashPercentBadge').innerText = pct + '% Completed';
-
-      document.getElementById('dashProtein').innerText = totals.p + 'g';
-      document.getElementById('dashCarbs').innerText = totals.c + 'g';
-      document.getElementById('dashFats').innerText = totals.f + 'g';
-
-      document.getElementById('barProtein').style.width = Math.min(100, (totals.p / appState.user.macroTargets.p) * 100) + '%';
-      document.getElementById('barCarbs').style.width = Math.min(100, (totals.c / appState.user.macroTargets.c) * 100) + '%';
-      document.getElementById('barFats').style.width = Math.min(100, (totals.f / appState.user.macroTargets.f) * 100) + '%';
-
-      // Meal list
-      const listEl = document.getElementById('dashMealList');
-      if (todayMeals.length === 0) {
-        listEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">No meals recorded yet today. Tap 'Scan Meal' to log!</p>`;
-      } else {
-        listEl.innerHTML = todayMeals.map((m, i) => `
-          <div class="flex justify-between items-center p-3 bg-slate-50 border border-slate-200/60 rounded-xl">
-            <div>
-              <p class="font-bold text-xs text-slate-800">${m.name}</p>
-              <p class="text-[10px] text-slate-400">P: ${m.p}g | C: ${m.c}g | F: ${m.f}g</p>
-            </div>
-            <div class="flex items-center gap-3">
-              <span class="text-xs font-black text-brand-600">${m.calories} kcal</span>
-              <button onclick="removeMealToday(${i})" class="text-slate-300 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
-            </div>
-          </div>
-        `).join('');
-      }
-    }
-
-    // AI Scanner Simulation & Breakdown Engine
-    const dropBox = document.getElementById('dropBox');
-    const cameraInput = document.getElementById('cameraInput');
-    dropBox.addEventListener('click', () => cameraInput.click());
-
-    function handleImageSelected(e) {
+    async function runRealAIScan(e) {
       const file = e.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = (event) => {
+      reader.onload = async (ev) => {
         document.getElementById('scanPrompt').classList.add('hidden');
         const img = document.getElementById('foodPreviewImg');
-        img.src = event.target.result;
+        img.src = ev.target.result;
         img.classList.remove('hidden');
 
         document.getElementById('scanningLoader').classList.remove('hidden');
         document.getElementById('scanResultArea').classList.add('hidden');
 
-        // AI processing simulation (Ready for API plug-in)
-        setTimeout(() => {
+        const base64Data = ev.target.result.split(',')[1];
+        const mimeType = file.type || 'image/jpeg';
+
+        try {
+          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+          
+          const prompt = `Analyze this exact food photo accurately. Identify all food items shown in the dish/plate.
+Return ONLY valid JSON array with NO markdown fences, NO backticks, NO extra words:
+[
+  {"name": "Food item name", "qty": 1, "unit": "bowl/piece/serving", "cal": 250, "p": 8, "c": 30, "f": 10}
+]`;
+
+          const resp = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [
+                  { text: prompt },
+                  { inline_data: { mime_type: mimeType, data: base64Data } }
+                ]
+              }]
+            })
+          });
+
+          const data = await resp.json();
+          if (data.error) throw new Error(data.error.message);
+
+          let txt = data.candidates[0].content.parts[0].text;
+          txt = txt.replace(/```json/g, '').replace(/```/g, '').trim();
+
+          stagedDetectedItems = JSON.parse(txt);
+          renderScanBreakdown();
+
           document.getElementById('scanningLoader').classList.add('hidden');
-          generateMockAIResult();
-        }, 1400);
+          document.getElementById('scanResultArea').classList.remove('hidden');
+
+        } catch (err) {
+          document.getElementById('scanningLoader').classList.add('hidden');
+          alert("AI Scan Error: " + err.message);
+          console.error(err);
+        }
       };
       reader.readAsDataURL(file);
     }
 
-    function generateMockAIResult() {
-      // Default identified meal components based on image input
-      stagedDetectedItems = [
-        { name: 'Roti (Phulka)', qty: 2, unit: 'pcs', cal: 200, p: 6, c: 38, f: 1 },
-        { name: 'Yellow Dal Tadka', qty: 1, unit: 'bowl', cal: 150, p: 9, c: 20, f: 4 },
-        { name: 'Paneer Sabzi', qty: 1, unit: 'serving', cal: 300, p: 14, c: 10, f: 22 }
-      ];
-      renderEditableScannedItems();
-      document.getElementById('scanResultArea').classList.remove('hidden');
-    }
-
-    function renderEditableScannedItems() {
-      const container = document.getElementById('scannedItemsList');
-      let totalCal = 0, totalP = 0, totalC = 0, totalF = 0;
-
-      container.innerHTML = stagedDetectedItems.map((item, idx) => {
-        totalCal += item.cal;
-        totalP += item.p;
-        totalC += item.c;
-        totalF += item.f;
-
+    function renderScanBreakdown() {
+      let cal = 0, p = 0, c = 0, f = 0;
+      const cont = document.getElementById('scannedItemsList');
+      cont.innerHTML = stagedDetectedItems.map((item, idx) => {
+        cal += item.cal; p += item.p; c += item.c; f += item.f;
         return `
-          <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-            <div class="flex-1 mr-2">
-              <input type="text" value="${item.name}" onchange="updateItemName(${idx}, this.value)" class="font-bold bg-transparent border-b border-dashed border-slate-300 focus:outline-none w-full" />
-              <p class="text-[10px] text-slate-400 mt-1">Portion: ${item.qty} ${item.unit}</p>
+          <div class="flex justify-between items-center p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+            <div>
+              <p class="font-bold text-slate-800">${item.name}</p>
+              <p class="text-[10px] text-slate-400">Qty: ${item.qty} ${item.unit} | P:${item.p}g C:${item.c}g F:${item.f}g</p>
             </div>
             <div class="flex items-center gap-2">
-              <input type="number" value="${item.cal}" onchange="updateItemCal(${idx}, this.value)" class="w-16 bg-white border border-slate-300 rounded-lg p-1 text-center font-black text-brand-600" />
-              <span class="text-slate-400 font-bold">kcal</span>
-              <button onclick="removeScannedRow(${idx})" class="text-slate-300 hover:text-rose-500 pl-1"><i class="fa-solid fa-xmark"></i></button>
+              <input type="number" value="${item.cal}" onchange="stagedDetectedItems[${idx}].cal=parseInt(this.value)||0; renderScanBreakdown();" class="w-16 bg-white border border-slate-300 rounded p-1 text-center font-bold text-brand-600" />
+              <span>kcal</span>
             </div>
           </div>
         `;
       }).join('');
 
-      document.getElementById('scannedTotalCal').innerText = totalCal + ' kcal';
-      document.getElementById('scannedTotalMacros').innerText = `P: ${totalP}g | C: ${totalC}g | F: ${totalF}g`;
+      document.getElementById('scannedTotalCal').innerText = cal + ' kcal';
+      document.getElementById('scannedTotalMacros').innerText = `P: ${p}g | C: ${c}g | F: ${f}g`;
     }
 
-    function updateItemName(idx, val) { stagedDetectedItems[idx].name = val; }
-    function updateItemCal(idx, val) { stagedDetectedItems[idx].cal = parseInt(val) || 0; renderEditableScannedItems(); }
-    function removeScannedRow(idx) { stagedDetectedItems.splice(idx, 1); renderEditableScannedItems(); }
-
     function commitScannedMeal() {
-      if (stagedDetectedItems.length === 0) return;
+      if (!stagedDetectedItems.length) return;
       const combinedName = stagedDetectedItems.map(i => i.name).join(' + ');
       const totalCal = stagedDetectedItems.reduce((s, i) => s + i.cal, 0);
       const totalP = stagedDetectedItems.reduce((s, i) => s + i.p, 0);
       const totalC = stagedDetectedItems.reduce((s, i) => s + i.c, 0);
       const totalF = stagedDetectedItems.reduce((s, i) => s + i.f, 0);
 
-      const mealEntry = {
+      state.meals[todayKey].unshift({
         name: combinedName,
-        calories: totalCal,
+        cal: totalCal,
         p: totalP,
         c: totalC,
-        f: totalF,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
+        f: totalF
+      });
 
-      if (!appState.meals[todayKey]) appState.meals[todayKey] = [];
-      appState.meals[todayKey].unshift(mealEntry);
-      saveState();
+      localStorage.setItem('calora_meals', JSON.stringify(state.meals));
+      alert("Meal food diary me add ho gaya!");
 
-      // Reset Scanner
-      document.getElementById('cameraInput').value = '';
+      // Reset
+      stagedDetectedItems = [];
       document.getElementById('foodPreviewImg').classList.add('hidden');
       document.getElementById('scanPrompt').classList.remove('hidden');
       document.getElementById('scanResultArea').classList.add('hidden');
+      document.getElementById('cameraInput').value = '';
 
       switchTab('dashboard');
     }
 
-    function removeMealToday(index) {
-      appState.meals[todayKey].splice(index, 1);
-      saveState();
-    }
+    function renderDashboard() {
+      const today = state.meals[todayKey] || [];
+      const total = today.reduce((s, i) => s + i.cal, 0);
+      document.getElementById('dashConsumed').innerText = total;
+      document.getElementById('dashProgressBar').style.width = Math.min(100, (total / 2000) * 100) + '%';
 
-    // Diary Section by Date
-    function loadDiaryForDate(dateStr) {
-      const records = appState.meals[dateStr] || [];
-      const cont = document.getElementById('diaryListContainer');
-      if (records.length === 0) {
-        cont.innerHTML = `<div class="p-8 text-center bg-white rounded-2xl border border-slate-200 text-slate-400 text-xs">No food records found for ${dateStr}.</div>`;
+      const cont = document.getElementById('dashMealList');
+      if (!today.length) {
+        cont.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">No meals added today.</p>`;
         return;
       }
-
-      cont.innerHTML = records.map(m => `
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 flex justify-between items-center">
-          <div>
-            <h4 class="font-bold text-sm text-slate-800">${m.name}</h4>
-            <p class="text-[11px] text-slate-400 mt-0.5">Macros: P: ${m.p}g • C: ${m.c}g • F: ${m.f}g</p>
-          </div>
-          <span class="font-black text-sm text-brand-600">${m.calories} kcal</span>
-        </div>
-      `).join('');
-    }
-
-    // Weight Section
-    function renderWeightTab() {
-      document.getElementById('weightStartDisplay').innerText = appState.user.startWeight + ' kg';
-      document.getElementById('weightCurrentDisplay').innerText = appState.user.currentWeight + ' kg';
-      document.getElementById('weightTargetDisplay').innerText = appState.user.targetWeight + ' kg';
-
-      const historyCont = document.getElementById('weightLogHistory');
-      historyCont.innerHTML = appState.weightHistory.slice().reverse().map(w => `
+      cont.innerHTML = today.map((m, idx) => `
         <div class="flex justify-between items-center p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-          <span class="font-semibold text-slate-600">${w.date}</span>
-          <span class="font-bold text-slate-900">${w.weight} kg</span>
+          <div>
+            <p class="font-bold text-slate-800">${m.name}</p>
+            <p class="text-[10px] text-slate-400">P:${m.p}g C:${m.c}g F:${m.f}g</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="font-bold text-brand-600">${m.cal} kcal</span>
+            <button onclick="state.meals['${todayKey}'].splice(${idx},1); localStorage.setItem('calora_meals', JSON.stringify(state.meals)); renderDashboard();" class="text-rose-500"><i class="fa-solid fa-trash"></i></button>
+          </div>
         </div>
       `).join('');
     }
 
-    function logNewWeight() {
-      const val = parseFloat(document.getElementById('newWeightInput').value);
-      if (!val) return;
-      appState.user.currentWeight = val;
-      appState.weightHistory.push({ date: todayKey, weight: val });
-      document.getElementById('newWeightInput').value = '';
-      saveState();
-    }
-
-    // Goal Calculation (BMR/TDEE)
-    function calculateAndSaveTarget() {
-      const age = parseInt(document.getElementById('calcAge').value) || 28;
-      const height = parseInt(document.getElementById('calcHeight').value) || 172;
-      const weight = appState.user.currentWeight || 72;
-      const activity = parseFloat(document.getElementById('calcActivity').value) || 1.375;
-      const goalAdjustment = parseInt(document.getElementById('calcGoal').value) || -400;
-
-      // Harris-Benedict BMR formula approximation
-      const bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
-      const tdee = Math.round(bmr * activity);
-      const calculatedTarget = Math.max(1200, tdee + goalAdjustment);
-
-      appState.user.dailyTarget = calculatedTarget;
-      saveState();
-      alert(`Updated Daily Calorie Goal to ${calculatedTarget} kcal!`);
-      switchTab('dashboard');
-    }
-
-    // Analytics Chart
-    let chartInstance = null;
-    function initAnalyticsChart() {
-      const ctx = document.getElementById('weeklyChart').getContext('2d');
-      chartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Today'],
-          datasets: [{
-            label: 'Calories Consumed',
-            data: [1750, 1890, 1650, 1920, 1800, 1680, 0],
-            backgroundColor: '#10b981',
-            borderRadius: 8
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true } }
-        }
-      });
-    }
-
-    function updateAnalyticsChart() {
-      if (!chartInstance) return;
-      const todayMeals = appState.meals[todayKey] || [];
-      const todayTotal = todayMeals.reduce((s, m) => s + m.calories, 0);
-      chartInstance.data.datasets[0].data[6] = todayTotal;
-      chartInstance.update();
-    }
-
-    // Settings actions
-    function exportDataJSON() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
-      const dlAnchor = document.createElement('a');
-      dlAnchor.setAttribute("href", dataStr);
-      dlAnchor.setAttribute("download", `calora_ai_backup_${todayKey}.json`);
-      dlAnchor.click();
-    }
-
-    function resetAllData() {
-      if (confirm("Kya aap sach me saara local food aur weight data delete karna chahte hain?")) {
-        localStorage.removeItem('calora_master_data');
-        location.reload();
-      }
-    }
-
-    // Auth Modal Handlers
-    function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
-    function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
-
-    function handleLogin() {
-      alert("Firebase details abhi config me placeholder hain. Guest mode local storage me aapka saara data safely chal raha hai!");
-      closeAuthModal();
-    }
-    function handleSignup() { handleLogin(); }
-
-    window.onload = initApp;
+    window.onload = () => {
+      renderDashboard();
+    };
   </script>
 </body>
 </html>
