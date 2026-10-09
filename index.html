@@ -210,26 +210,104 @@
     </section>
 
     <!-- VIEW 2: AI FOOD SCANNER -->
-    <section id="view-scanner" class="hidden space-y-5">
-      <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm text-center space-y-4">
-        <div class="max-w-md mx-auto">
-          <h2 class="text-2xl font-black text-slate-900">AI Food Scanner 📸</h2>
-          <p class="text-xs text-slate-500 mt-1">Plate ki photo snap karein. AI har ek food item, portion size aur estimated calories identify karega.</p>
-        </div>
+  <!-- Settings ya Scanner View me ek chhota API Key Input box daalein -->
+<div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs mb-4">
+  <div class="flex justify-between items-center mb-1">
+    <span class="font-bold text-amber-800"><i class="fa-solid fa-key"></i> Gemini AI Vision Key:</span>
+    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 underline font-semibold">Get Free Key</a>
+  </div>
+  <input type="password" id="geminiApiKeyInput" placeholder="Yahan free Gemini API key paste karein (AIzaSy...)" class="w-full bg-white border border-amber-300 rounded-lg p-2 text-xs" onchange="localStorage.setItem('calora_gemini_key', this.value)" />
+  <p class="text-[10px] text-amber-700 mt-1">Google AI Studio se free key lekar yahan daalein. Key aapke phone/browser me hi safe rahegi.</p>
+</div>
 
-        <div id="dropBox" class="border-2 border-dashed border-slate-300 hover:border-brand-500 rounded-2xl p-6 bg-slate-50 cursor-pointer transition">
-          <input type="file" id="cameraInput" accept="image/*" class="hidden" onchange="handleImageSelected(event)" />
-          <div id="scanPrompt" class="space-y-3">
-            <div class="w-16 h-16 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center text-2xl mx-auto shadow-inner">
-              <i class="fa-solid fa-camera"></i>
-            </div>
-            <div>
-              <p class="text-sm font-bold text-slate-700">Click to Snap or Upload Food</p>
-              <p class="text-xs text-slate-400">Supports direct mobile camera capture</p>
-            </div>
-          </div>
-          <img id="foodPreviewImg" class="hidden max-h-64 mx-auto rounded-xl shadow-md object-cover" />
-        </div>
+<script>
+  // Saved API key load karein
+  const savedKey = localStorage.getItem('calora_gemini_key');
+  if (savedKey && document.getElementById('geminiApiKeyInput')) {
+    document.getElementById('geminiApiKeyInput').value = savedKey;
+  }
+
+  // REAL AI Food Scanner Function
+  async function handleImageSelected(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const apiKey = localStorage.getItem('calora_gemini_key') || (document.getElementById('geminiApiKeyInput') ? document.getElementById('geminiApiKeyInput').value.trim() : '');
+    
+    if (!apiKey) {
+      alert("Pehle apni Free Gemini API Key daalein! (Google AI Studio se 1 second me mil jaati hai)");
+      document.getElementById('cameraInput').value = '';
+      return;
+    }
+
+    // Preview show karein
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      document.getElementById('scanPrompt').classList.add('hidden');
+      const img = document.getElementById('foodPreviewImg');
+      img.src = event.target.result;
+      img.classList.remove('hidden');
+
+      document.getElementById('scanningLoader').classList.remove('hidden');
+      document.getElementById('scanResultArea').classList.add('hidden');
+
+      // Base64 clean data nikalna
+      const base64Data = event.target.result.split(',')[1];
+      const mimeType = file.type || 'image/jpeg';
+
+      try {
+        // Real Gemini 1.5 Flash Vision Call
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                {
+                  text: `You are an expert Indian nutritionist and AI vision system. Analyze this food image precisely.
+Identify every visible food item with realistic quantity, estimated calories (kcal), and macros (protein, carbs, fat in grams).
+Return STRICT JSON format ONLY, without markdown fences or extra words:
+[
+  {"name": "Item Name", "qty": 1, "unit": "serving/bowl/pcs", "cal": 250, "p": 10, "c": 30, "f": 8}
+]`
+                },
+                {
+                  inline_data: {
+                    mime_type: mimeType,
+                    data: base64Data
+                  }
+                }
+              ]
+            }]
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.error) {
+          throw new Error(data.error.message);
+        }
+
+        let rawText = data.candidates[0].content.parts[0].text;
+        // Clean JSON formatting
+        rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+        const parsedItems = JSON.parse(rawText);
+
+        stagedDetectedItems = parsedItems;
+        renderEditableScannedItems();
+
+        document.getElementById('scanningLoader').classList.add('hidden');
+        document.getElementById('scanResultArea').classList.remove('hidden');
+
+      } catch (err) {
+        document.getElementById('scanningLoader').classList.add('hidden');
+        alert("AI Scan Error: " + err.message);
+        console.error(err);
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+</script>
 
         <!-- Scanning progress -->
         <div id="scanningLoader" class="hidden py-6 space-y-2">
