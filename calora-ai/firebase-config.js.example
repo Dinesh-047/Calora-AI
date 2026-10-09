@@ -1,9 +1,0 @@
-// Copy this file to firebase-config.js and replace values with your Firebase Web App config.
-// Then add <script defer src="/firebase-config.js"></script> before /app.js in index.html.
-// Do not put service-account credentials or private keys here.
-window.CALORA_FIREBASE_CONFIG = {
-  apiKey: "YOUR_FIREBASE_WEB_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  appId: "YOUR_FIREBASE_APP_ID"
-};
