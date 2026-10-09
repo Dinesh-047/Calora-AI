@@ -9,7 +9,6 @@
   <!-- Tailwind CSS & FontAwesome -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script>
     tailwind.config = {
@@ -159,7 +158,7 @@
       <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm text-center space-y-4">
         <div class="max-w-md mx-auto">
           <h2 class="text-2xl font-black text-slate-900">AI Food Scanner 📸</h2>
-          <p class="text-xs text-slate-500 mt-1">Plate ki photo snap karein. AI food items aur calories instantly calculate karega.</p>
+          <p class="text-xs text-slate-500 mt-1">Plate ki photo snap karein. Real AI food identify karke calories calculate karega.</p>
         </div>
 
         <div id="dropBox" class="border-2 border-dashed border-slate-300 hover:border-brand-500 rounded-2xl p-6 bg-slate-50 cursor-pointer transition">
@@ -170,7 +169,7 @@
             </div>
             <div>
               <p class="text-sm font-bold text-slate-700">Click to Snap or Upload Food</p>
-              <p class="text-xs text-slate-400">Camera / Gallery support</p>
+              <p class="text-xs text-slate-400">Mobile Camera & Gallery Supported</p>
             </div>
           </div>
           <img id="foodPreviewImg" class="hidden max-h-64 mx-auto rounded-xl shadow-md object-cover" />
@@ -179,15 +178,15 @@
         <!-- Scanning progress -->
         <div id="scanningLoader" class="hidden py-6 space-y-2">
           <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-brand-500 border-t-transparent"></div>
-          <p class="text-xs font-semibold text-slate-600">AI food ingredients scan kar raha hai... Please wait.</p>
+          <p class="text-xs font-semibold text-slate-600">Gemini AI khane ko identify kar raha hai... Kripya 2 second rukein.</p>
         </div>
 
         <!-- Editable Breakdown Result -->
         <div id="scanResultArea" class="hidden text-left space-y-4 pt-4 border-t border-slate-200">
           <div class="flex justify-between items-center">
             <div>
-              <h3 class="font-extrabold text-slate-900 text-sm">Detected Meal Breakdown</h3>
-              <p class="text-xs text-emerald-600 font-semibold"><i class="fa-solid fa-circle-check"></i> Verified Estimation</p>
+              <h3 class="font-extrabold text-slate-900 text-sm">Detected Items</h3>
+              <p class="text-xs text-emerald-600 font-semibold"><i class="fa-solid fa-circle-check"></i> Real AI Analysis</p>
             </div>
             <span class="text-[11px] bg-slate-100 font-bold px-2 py-1 rounded-lg text-slate-600">Editable</span>
           </div>
@@ -216,7 +215,7 @@
       <div class="flex justify-between items-center">
         <div>
           <h2 class="text-xl font-bold text-slate-900">Daily Food Diary</h2>
-          <p class="text-xs text-slate-400">Select date to view meal logs</p>
+          <p class="text-xs text-slate-400">Date select karke purana record dekhein</p>
         </div>
         <input type="date" id="diaryDatePicker" class="bg-white border border-slate-200 text-xs font-bold rounded-xl px-3 py-2" onchange="loadDiaryForDate(this.value)" />
       </div>
@@ -244,7 +243,7 @@
         </div>
 
         <div class="flex gap-2">
-          <input type="number" id="newWeightInput" step="0.1" placeholder="Enter current weight (kg)" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm" />
+          <input type="number" id="newWeightInput" step="0.1" placeholder="Enter weight (kg)" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm" />
           <button onclick="logNewWeight()" class="bg-slate-900 text-white font-bold px-5 rounded-xl text-sm">Save Log</button>
         </div>
 
@@ -285,7 +284,7 @@
           </div>
         </div>
         <button onclick="calculateAndSaveTarget()" class="w-full bg-brand-600 text-white font-bold py-3 rounded-xl transition">
-          Calculate & Update Daily Target
+          Calculate & Save Target
         </button>
       </div>
     </section>
@@ -319,7 +318,7 @@
   </nav>
 
   <script>
-    // Embedded API Key in background - No inputs or raw errors shown to customers
+    // Aapki exact Gemini API Key
     const AI_TOKEN = "AQ.Ab8RN6JvoxJU4xJy_tznN68AGy7wU0xZVUJUr6m4AeXR2X947w";
 
     const todayKey = new Date().toISOString().split('T')[0];
@@ -425,12 +424,11 @@
       }
     }
 
-    // Trigger Camera
     document.getElementById('dropBox').addEventListener('click', () => {
       document.getElementById('cameraInput').click();
     });
 
-    // Real AI Vision with Fallback Pipeline
+    // Real AI Vision Scanner Logic
     async function processFoodImage(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -449,52 +447,48 @@
         const mimeType = file.type || 'image/jpeg';
 
         try {
-          // Direct API calls trying v1 endpoints
-          let detected = null;
-          const endpoints = [
-            `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${AI_TOKEN}`,
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${AI_TOKEN}`
-          ];
+          // Direct call to Gemini REST API without any fake fallback
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${AI_TOKEN}`;
+          
+          const prompt = `You are a professional nutrition expert. Look closely at this image. Identify EVERY individual food item visible on the plate or bowl.
+For each item estimate:
+- name: (Exact item name, e.g. "Dal Tadka", "Roti", "Jeera Rice", "Matar Paneer", "Gulab Jamun", "Papad", "Raita")
+- qty: quantity number
+- unit: portion unit ("pcs", "bowl", "serving")
+- cal: estimated calories in kcal
+- p: protein in grams
+- c: carbs in grams
+- f: fat in grams
 
-          for (const url of endpoints) {
-            try {
-              const resp = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  contents: [{
-                    parts: [
-                      { text: "Analyze this food image. Return strictly JSON array without markdown formatting: [{\"name\":\"Item Name\",\"qty\":1,\"unit\":\"serving/bowl/pcs\",\"cal\":250,\"p\":10,\"c\":30,\"f\":8}]" },
-                      { inline_data: { mime_type: mimeType, data: base64Data } }
-                    ]
-                  }]
-                })
-              });
-              const json = await resp.json();
-              if (json.candidates && json.candidates[0].content.parts[0].text) {
-                let raw = json.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
-                detected = JSON.parse(raw);
-                break;
-              }
-            } catch(e) {}
+Return ONLY a pure JSON array, no markdown, no explanation:
+[{"name": "...", "qty": 1, "unit": "...", "cal": 150, "p": 5, "c": 20, "f": 4}]`;
+
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [
+                  { text: prompt },
+                  { inline_data: { mime_type: mimeType, data: base64Data } }
+                ]
+              }]
+            })
+          });
+
+          const data = await response.json();
+          if (data.error) {
+            throw new Error(data.error.message);
           }
 
-          if (!detected || !Array.isArray(detected)) {
-            // Intelligent local fallback if API quota or token limits hit
-            detected = [
-              { name: "Mixed Vegetable Dish", qty: 1, unit: "bowl", cal: 220, p: 6, c: 24, f: 11 },
-              { name: "Roti (Phulka)", qty: 2, unit: "pcs", cal: 200, p: 6, c: 38, f: 1 }
-            ];
-          }
+          let textResponse = data.candidates[0].content.parts[0].text;
+          textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
 
-          stagedDetectedItems = detected;
+          stagedDetectedItems = JSON.parse(textResponse);
           renderEditableScannedItems();
 
         } catch (err) {
-          stagedDetectedItems = [
-            { name: "Food Plate", qty: 1, unit: "serving", cal: 450, p: 14, c: 55, f: 18 }
-          ];
-          renderEditableScannedItems();
+          alert("Scan Error: " + (err.message || "AI image scan nahi kar pa raha hai. Kripya dobara try karein."));
         } finally {
           document.getElementById('scanningLoader').classList.add('hidden');
           document.getElementById('scanResultArea').classList.remove('hidden');
