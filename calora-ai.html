@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calora AI - Smart Calorie & Nutrition Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    body {
+      background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
+      min-height: 100vh;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center p-4 sm:p-6">
+
+  <!-- Header -->
+  <header class="w-full max-w-xl text-center py-6">
+    <div class="inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-4 py-1.5 rounded-full text-sm font-medium mb-3 border border-emerald-500/20">
+      <i class="fa-solid fa-wand-magic-sparkles"></i> AI Powered Nutrition
+    </div>
+    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Calora AI</h1>
+    <p class="text-slate-400 text-sm mt-1">Apne khane ki photo upload ya click karein aur instant calories jaanein.</p>
+  </header>
+
+  <!-- Main Container -->
+  <main class="w-full max-w-xl bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-700 p-5 sm:p-6 shadow-xl">
+    
+    <!-- Upload Zone -->
+    <div id="dropZone" class="border-2 border-dashed border-slate-600 hover:border-emerald-500 rounded-xl p-6 text-center cursor-pointer transition-all bg-slate-900/50">
+      <input type="file" id="fileInput" accept="image/*" class="hidden" />
+      <div id="uploadPrompt" class="space-y-3">
+        <div class="w-14 h-14 mx-auto rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-2xl">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-slate-200">Photo yahan drop karein ya tap karke select karein</p>
+          <p class="text-xs text-slate-400 mt-1">PNG, JPG, WebP supported</p>
+        </div>
+      </div>
+
+      <!-- Image Preview -->
+      <div id="previewContainer" class="hidden relative">
+        <img id="imagePreview" src="" alt="Food Preview" class="max-h-64 mx-auto rounded-lg object-cover shadow-md" />
+        <button id="removeBtn" class="absolute top-2 right-2 bg-red-500/80 hover:bg-red-600 text-white p-2 rounded-full text-xs shadow-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <button id="analyzeBtn" class="w-full mt-4 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-3 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
+      <span>Analyze Nutrition</span>
+      <i class="fa-solid fa-bolt"></i>
+    </button>
+
+    <!-- Loader -->
+    <div id="loader" class="hidden py-8 text-center space-y-3">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent"></div>
+      <p class="text-sm text-slate-300">AI aapke food items ko identify kar raha hai...</p>
+    </div>
+
+    <!-- Result Card -->
+    <div id="resultCard" class="hidden mt-6 pt-6 border-t border-slate-700/80 space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 id="foodName" class="text-xl font-bold text-slate-100">Dish Name</h3>
+        <span id="calorieBadge" class="bg-emerald-500/20 text-emerald-300 font-bold px-3 py-1 rounded-full text-sm">0 kcal</span>
+      </div>
+
+      <!-- Macros Grid -->
+      <div class="grid grid-cols-3 gap-3 text-center">
+        <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700/50">
+          <p class="text-xs text-slate-400">Protein</p>
+          <p id="proteinVal" class="text-lg font-semibold text-sky-400 mt-0.5">0g</p>
+        </div>
+        <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700/50">
+          <p class="text-xs text-slate-400">Carbs</p>
+          <p id="carbsVal" class="text-lg font-semibold text-amber-400 mt-0.5">0g</p>
+        </div>
+        <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700/50">
+          <p class="text-xs text-slate-400">Fats</p>
+          <p id="fatsVal" class="text-lg font-semibold text-rose-400 mt-0.5">0g</p>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/40 p-3 rounded-xl text-xs text-slate-300 border border-slate-700/40">
+        <p class="font-medium text-slate-200 mb-1"><i class="fa-solid fa-circle-info text-emerald-400 mr-1"></i> Note:</p>
+        <span id="foodInsights">Yeh estimate portion size ke mutabiq approximate calculations par based hai.</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- GitHub Upload Steps -->
+  <script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const uploadPrompt = document.getElementById('uploadPrompt');
+    const previewContainer = document.getElementById('previewContainer');
+    const imagePreview = document.getElementById('imagePreview');
+    const removeBtn = document.getElementById('removeBtn');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const loader = document.getElementById('loader');
+    const resultCard = document.getElementById('resultCard');
+
+    let currentFile = null;
+
+    dropZone.addEventListener('click', (e) => {
+      if (e.target !== removeBtn && !removeBtn.contains(e.target)) {
+        fileInput.click();
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) handleImage(file);
+    });
+
+    function handleImage(file) {
+      currentFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        imagePreview.src = e.target.result;
+        uploadPrompt.classList.add('hidden');
+        previewContainer.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    removeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      currentFile = null;
+      fileInput.value = '';
+      imagePreview.src = '';
+      previewContainer.classList.add('hidden');
+      uploadPrompt.classList.remove('hidden');
+      resultCard.classList.add('hidden');
+    });
+
+    analyzeBtn.addEventListener('click', () => {
+      if (!currentFile) {
+        alert('Pehle ek image select karein!');
+        return;
+      }
+
+      loader.classList.remove('hidden');
+      resultCard.classList.add('hidden');
+      analyzeBtn.disabled = true;
+
+      // Simulated Analysis Response (GitHub Pages frontend ke liye)
+      setTimeout(() => {
+        loader.classList.add('hidden');
+        resultCard.classList.remove('hidden');
+        analyzeBtn.disabled = false;
+
+        document.getElementById('foodName').innerText = "Healthy Thali / Meal Bowl";
+        document.getElementById('calorieBadge').innerText = "480 kcal";
+        document.getElementById('proteinVal').innerText = "22g";
+        document.getElementById('carbsVal').innerText = "56g";
+        document.getElementById('fatsVal').innerText = "14g";
+        document.getElementById('foodInsights').innerText = "Isme balanced carbohydrates aur healthy protein ka good ratio hai.";
+      }, 1500);
+    });
+  </script>
+</body>
+</html>
