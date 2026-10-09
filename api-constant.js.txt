@@ -1,0 +1,2 @@
+    // Keep Gemini credentials in a server-side Cloudflare Pages Function secret.
+    const GEMINI_MODEL = "gemini-3.8-flash";

@@ -1,0 +1,76 @@
+    // Real AI Vision Scanner Logic
+    async function processFoodImage(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      // Clear prior analysis so an API error cannot leave stale calories on screen.
+      stagedDetectedItems = [];
+      document.getElementById('scanResultArea').classList.add('hidden');
+      document.getElementById('scannedItemsList').innerHTML = '';
+      document.getElementById('scannedTotalCal').innerText = '0 kcal';
+      document.getElementById('scannedTotalMacros').innerText = 'P: 0g | C: 0g | F: 0g';
+
+      const reader = new FileReader();
+      reader.onerror = () => {
+        document.getElementById('scanningLoader').classList.add('hidden');
+        alert('Image read nahi ho paayi. Please another photo try karein.');
+      };
+      reader.onload = async (ev) => {
+        document.getElementById('scanPrompt').classList.add('hidden');
+        const img = document.getElementById('foodPreviewImg');
+        img.src = ev.target.result;
+        img.classList.remove('hidden');
+        document.getElementById('scanningLoader').classList.remove('hidden');
+        const base64Data = String(ev.target.result).split(',')[1];
+        const mimeType = file.type || 'image/jpeg';
+
+        try {
+          if (!base64Data || !mimeType.startsWith('image/')) {
+            throw new Error('Valid image file select karein.');
+          }
+
+          // Requests go through a Cloudflare Pages Function; no API key in browser code.
+          const response = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            cache: 'no-store',
+            body: JSON.stringify({ image: base64Data, mimeType })
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok || data.error) {
+            throw new Error(data.error || ('Food scan failed (HTTP ' + response.status + ').'));
+          }
+          if (!Array.isArray(data.items)) {
+            throw new Error('Backend response format invalid hai.');
+          }
+
+          stagedDetectedItems = data.items
+            .filter(item => item && typeof item.name === 'string' && item.name.trim())
+            .map(item => ({
+              name: item.name.trim(),
+              qty: Math.max(0, Number(item.qty) || 1),
+              unit: String(item.unit || 'serving'),
+              cal: Math.max(0, Math.round(Number(item.cal) || 0)),
+              p: Math.max(0, Math.round((Number(item.p) || 0) * 10) / 10),
+              c: Math.max(0, Math.round((Number(item.c) || 0) * 10) / 10),
+              f: Math.max(0, Math.round((Number(item.f) || 0) * 10) / 10)
+            }));
+
+          if (!stagedDetectedItems.length) {
+            throw new Error('Image se food identify nahi hua. Clear, close-up photo try karein.');
+          }
+
+          renderEditableScannedItems();
+          document.getElementById('scanResultArea').classList.remove('hidden');
+        } catch (err) {
+          stagedDetectedItems = [];
+          document.getElementById('scanResultArea').classList.add('hidden');
+          alert('Scan Error: ' + (err.message || 'AI image scan nahi kar pa raha hai. Please dobara try karein.'));
+        } finally {
+          document.getElementById('scanningLoader').classList.add('hidden');
+          // Allow selecting the same file again to trigger another analysis.
+          document.getElementById('cameraInput').value = '';
+        }
+      };
+      reader.readAsDataURL(file);
+    }
